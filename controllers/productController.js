@@ -1,6 +1,7 @@
 const productModel = require("../models/productModel");
 const catchAsyncErrors = require("../middleware/catchAsyncErrors");
 const ErrorHandler = require("../utils/errorHandler");
+const ApiFeatures = require("../utils/apifeatures");
 
 //create product -- admin
 exports.createProduct = catchAsyncErrors(async (req, res, next) => {
@@ -13,9 +14,24 @@ exports.createProduct = catchAsyncErrors(async (req, res, next) => {
 
 //get all products
 exports.getAllProducts = catchAsyncErrors(async (req, res) => {
-  const products = await productModel.find();
+  const resultPerPage = 5;
+
+  const apiFeature = new ApiFeatures(productModel.find(), req.query)
+    .search()
+    .filter()
+    .pagination(resultPerPage)
+  //req.query.keyword kuch keyword hum jab search krne ko bolte h wo h
+  const products = await apiFeature.query;
+  /*hum keyword find me islie pass nhi krrhe kyuki wo direct match dedega word ka 
+  matlab agr search kia h samosa matlab hum wo sare words chahie jinme samosa aaye 
+  ab samosa unke aage aaye ya piche aaye but usko contain krne wale sare result dedeo
+
+  but agr model.find({name:samosa }) krte hai to wo sirf samosa word dega usko koi contain krne wala result nhi
+  eg ye hume samosamosa nhi dega sirf samosa dega
+  */
+
   res.status(200).json({
-    message: "Route is working fine",
+    success: true,
     products,
   });
 });
